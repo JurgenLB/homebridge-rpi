@@ -530,6 +530,7 @@
                         "properties": {
                           "device": {
                             "enum": [
+                              "garage",
                               "lock",
                               "switch"
                             ]
