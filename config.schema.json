@@ -104,6 +104,12 @@
                         ]
                       },
                       {
+                        "title": "DS18B20 Temperature Sensor",
+                        "enum": [
+                          "ds18b20"
+                        ]
+                      },
+                      {
                         "title": "Carbon Monoxide Sensor",
                         "enum": [
                           "carbonmonoxide"
@@ -291,6 +297,11 @@
                     "title": "# LEDs",
                     "description": "The number LEDs.<br>For device: Blinkt.",
                     "type": "integer"
+                  },
+                  "id": {
+                    "title": "ID",
+                    "description": "The ID of the DS18B20 temperature sensor (without leading '28-').<br>For device: DS18B20.",
+                    "type": "string"
                   }
                 },
                 "allOf": [
@@ -301,6 +312,7 @@
                           "device": {
                             "enum": [
                               "blinkt",
+                              "ds18b20",
                               "fanshim",
                               "p9813"
                             ]
@@ -560,6 +572,24 @@
                       {
                         "properties": {
                           "autoOff": {
+                            "not": {}
+                          }
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "anyOf": [
+                      {
+                        "properties": {
+                          "device": {
+                            "const": "ds18b20"
+                          }
+                        }
+                      },
+                      {
+                        "properties": {
+                          "id": {
                             "not": {}
                           }
                         }
