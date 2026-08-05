@@ -210,13 +210,21 @@
                   "name": {
                     "title": "Name",
                     "description": "The HomeKit name of the device.",
-                    "type": "string"
+                    "type": "string",
+					"condition": {
+                	  "functionBody": "return ['blinkt', 'button', 'dht', 'ds18b20', 'carbonmonoxide', 'contact', 'doorbell', 'fan', 'fanshim', 'garage', 'leak', 'light', 'lock', 'motion', 'p9813', 'rocker', 'servo', 'smoke', 'switch', 'valve'].includes(model.devices[arrayIndices].accessoryType);"
+					    ]
+					}
                   },
                   "gpio": {
                     "title": "GPIO",
                     "description": "The BCM number of the GPIO pin.<br>For devices: Button, Carbon Monoxide Sensor, Contact Sensor, DHTxx Sensor, Door Bell, Fan, Garage Door Opener, Leak Sensor, Light, Motion Sensor, Rocker, Servo Motor, Smoke Sensor, Switch.",
                     "type": "integer",
-                    "maximum": 31
+                    "maximum": 31,
+					"condition": {
+                	  "functionBody": "return ['blinkt', 'button', 'dht', 'carbonmonoxide', 'contact', 'doorbell', 'fan', 'fanshim', 'garage', 'leak', 'light', 'lock', 'motion', 'p9813', 'rocker', 'servo', 'smoke', 'switch', 'valve'].includes(model.devices[arrayIndices].accessoryType);"
+					    ]
+					}
                   },
                   "pull": {
                     "title": "Pull-up/pull-down resistor",
@@ -241,67 +249,111 @@
                           "up"
                         ]
                       }
-                    ]
+                    ],
+					"condition": {
+                	  "functionBody": "return ['blinkt', 'button', 'dht', 'carbonmonoxide', 'contact', 'doorbell', 'fan', 'fanshim', 'garage', 'leak', 'light', 'lock', 'motion', 'p9813', 'rocker', 'servo', 'smoke', 'switch', 'valve'].includes(model.devices[arrayIndices].accessoryType);"
+					    ]
+					}
                   },
                   "debounceTimeout": {
                     "title": "Debounce Timeout",
                     "description": "Time in ms to ignore state changes for debouncing. Default 20ms.<br>For input devices: Button, Carbon Monoxide Sensor, Contact Sensor, Door Bell, Leak Sensor, Motion Sensor, Rocket, Smoke Sensor.",
                     "type": "integer",
                     "minimum": 0,
-                    "maxmimum": 300
+                    "maxmimum": 300,
+					"condition": {
+                	  "functionBody": "return ['button', 'carbonmonoxide', 'contact', 'doorbell', 'garage', 'leak', 'light', 'lock', 'motion', 'p9813', 'rocker', 'smoke', 'switch', 'valve'].includes(model.devices[arrayIndices].accessoryType);"
+					    ]
+					}
                   },
                   "reversed": {
                     "title": "Reversed",
                     "description": "The device state is reversed<br>For devices: Button, Carbon Monoxide Sensor, Contact Sensor, Door Bell, Garage Door Opener, Leak Sensor, Motion Sensor, Smoke Sensor, Switch.",
-                    "type": "boolean"
+                    "type": "boolean",
+					"condition": {
+                	  "functionBody": "return ['button', 'carbonmonoxide', 'contact', 'doorbell', 'garage', 'leak', 'light', 'lock', 'motion', 'p9813', 'rocker', 'smoke', 'switch', 'valve'].includes(model.devices[arrayIndices].accessoryType);"
+					    ]
+					}
                   },
                   "doublePressTimeout": {
                     "title": "Double Press Timeout",
                     "description": "Time in ms to wait after a release to see if button is pressed again for Double Press. Default 500ms.  Set to 0 to disable Double Press altogether.<br>For device: Button.",
                     "type": "integer",
                     "minimum": 0,
-                    "maxmimum": 100
+                    "maxmimum": 100,
+					"condition": {
+                	  "functionBody": "return ['button', 'contact', 'rocker'].includes(model.devices[arrayIndices].accessoryType);"
+					    ]
+					}
                   },
                   "longPressTimeout": {
                     "title": "Long Press Timeout",
                     "description": "Time in ms between button press and release after which a Long Press is issued. Default: 1000ms. Set to 0 to disable Long Press.<br>For device: Button.",
                     "type": "integer",
                     "minimum": 0,
-                    "maxmimum": 100
+                    "maxmimum": 100,
+					"condition": {
+                	  "functionBody": "return ['button', 'contact', 'rocker'].includes(model.devices[arrayIndices].accessoryType);"
+					    ]
+					}
                   },
                   "pulse": {
                     "title": "Pulse",
                     "description": "Time in ms to lock the lock or turn off the switch automatically.<br>For devices: Lock, Switch.",
                     "type": "integer",
                     "minimum": 20,
-                    "maximum": 5000
+                    "maximum": 5000,
+					"condition": {
+                	  "functionBody": "return ['garage', 'lock', 'switch', 'valve'].includes(model.devices[arrayIndices].accessoryType);"
+					    ]
+					}
                   },
                   "duration": {
                     "title": "Expose Duration",
                     "description": "Expose duration characteristic on switch to turn it off automatically.<br>For device: Switch.",
-                    "type": "boolean"
+                    "type": "boolean",
+					"condition": {
+                	  "functionBody": "return ['garage', 'switch', 'valve'].includes(model.devices[arrayIndices].accessoryType);"
+					    ]
+					}
                   },
                   "gpioClock": {
                     "title": "GPIO Clock",
                     "description": "The BCM number of the GPIO pin for the clock signal.<br>For device: Blinkt.",
                     "type": "integer",
-                    "maximum": 31
+                    "maximum": 31,
+					"condition": {
+                	  "functionBody": "return ['blinkt'].includes(model.devices[arrayIndices].accessoryType);"
+					    ]
+					}
                   },
                   "gpioData": {
                     "title": "GPIO Data",
                     "description": "The BCM number of the GPIO pin for the data signal.<br>For device: Blinkt.",
                     "type": "integer",
-                    "maximum": 31
+                    "maximum": 31,
+					"condition": {
+                	  "functionBody": "return ['blinkt'].includes(model.devices[arrayIndices].accessoryType);"
+					    ]
+					}
                   },
                   "nLeds": {
                     "title": "# LEDs",
                     "description": "The number LEDs.<br>For device: Blinkt.",
-                    "type": "integer"
+                    "type": "integer",
+					"condition": {
+                	  "functionBody": "return ['blinkt'].includes(model.devices[arrayIndices].accessoryType);"
+					    ]
+					}
                   },
                   "id": {
                     "title": "ID",
                     "description": "The ID of the DS18B20 temperature sensor (without leading '28-').<br>For device: DS18B20.",
-                    "type": "string"
+                    "type": "string",
+					"condition": {
+                	  "functionBody": "return ['ds18b20'].includes(model.devices[arrayIndices].accessoryType);"
+					    ]
+					}
                   }
                 },
                 "allOf": [
@@ -572,7 +624,7 @@
                       {
                         "properties": {
                           "autoOff": {
-                            "not": {}
+                            "not": {ds18b20}
                           }
                         }
                       }
