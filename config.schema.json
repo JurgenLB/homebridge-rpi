@@ -4,6 +4,7 @@
   "singular": true,
   "headerDisplay": "Homebridge plugin for Raspberry Pi",
   "footerDisplay": "",
+  "strictValidation": true,
   "schema": {
     "type": "object",
     "additionalProperties": false,
@@ -17,33 +18,237 @@
       },
       "hosts": {
         "title": "Raspberry Pis",
-        "notitle": true,
         "type": "array",
         "items": {
-          "description": "<b>Raspberry Pi</b>",
+          "title": " {{ value.name || value.host || 'New Raspberry Pi' }}",
           "type": "object",
+          "expandable": true,
+          "expanded": false,
           "additionalProperties": false,
           "properties": {
             "host": {
               "title": "Host",
-              "description": "IP address or hostname and port of the Pi's GPIO daemon.  E.g.: 'localhost:8889'.  Default port is 8889 for rgpiod; use port 8888 for pigpiod.",
+              "description": "IP address or hostname and port of the Pi's GPIO daemon.<br>E.g.: 'localhost:8889'.  Default port is 8889 for rgpiod; use port 8888 for pigpiod.",
               "type": "string",
+              "placeholder": "localhost",
               "required": true
-            },
-            "user": {
-              "title": "User",
-              "description": "Username for rgpiod authentication.  Default: 'homebridge-rpi'.",
-              "type": "string"
-            },
-            "password": {
-              "title": "Password",
-              "description": "Password for rgpiod authentication.  Default: ''.",
-              "type": "string"
             },
             "name": {
               "title": "Name",
               "description": "The hostname of the Raspberry Pi.",
               "type": "string"
+            },
+            "user": {
+              "title": "User",
+              "description": "Username for rgpiod authentication.  Default: 'homebridge-rpi'.",
+              "type": "string",
+              "placeholder": "homebridge-rpi",
+              "condition": {
+                "functionBody": "return !model.hosts[arrayIndices[0]].host.endsWith(':8888')"
+              }
+            },
+            "password": {
+              "title": "Password",
+              "description": "Password for rgpiod authentication.  Default: ''.",
+              "type": "string",
+              "condition": {
+                "functionBody": "return !model.hosts[arrayIndices[0]].host.endsWith(':8888')"
+              }
+            },
+            "devices": {
+              "title": "Devices",
+              "type": "array",
+              "items": {
+                "title": "{{ value.name || value.device || 'New Device' }}",
+                "type": "object",
+                "expandable": true,
+                "expanded": false,
+                "additionalProperties": false,
+                "properties": {
+                  "device": {
+                    "title": "Device",
+                    "description": "The type of the device. See the <a href=\"https://github.com/ebaauw/homebridge-rpi/wiki/Supported-Devices#gpio-devices\" target=\"_blank\">Wiki</a> for details.",
+                    "type": "string",
+                    "required": true,
+                    "oneOf": [
+                      { "title": "Blinkt", "enum": ["blinkt"] },
+                      { "title": "Button", "enum": ["button"] },
+                      { "title": "DHTxx Temperature/Humidity Sensor", "enum": ["dht"] },
+                      { "title": "DS18B20 Temperature Sensor", "enum": ["ds18b20"] },
+                      { "title": "Carbon Monoxide Sensor", "enum": ["carbonmonoxide"]},
+                      { "title": "Contact Sensor", "enum": ["contact"] },
+                      { "title": "Door Bell", "enum": ["doorbell"] },
+                      { "title": "Fan", "enum": ["fan"] },
+                      { "title": "Fan SHIM", "enum": ["fanshim"] },
+                      { "title": "Garage Door Opener", "enum": ["garage"] },
+                      { "title": "Leak Sensor", "enum": ["leak"] },
+                      { "title": "Light", "enum": ["light"] },
+                      { "title": "Lock", "enum": ["lock"] },
+                      { "title": "Motion Sensor", "enum": ["motion"] },
+                      { "title": "Chain of P9813 LED Controllers", "enum": ["p9813"] },
+                      { "title": "Rocker", "enum": ["rocker"] },
+                      { "title": "Servo Motor", "enum": ["servo"] },
+                      { "title": "Smoke Sensor", "enum": ["smoke"] },
+                      { "title": "Switch", "enum": ["switch"] },
+                      { "title": "Valve", "enum": ["valve"] }
+                    ]
+                  },
+                  "name": {
+                    "title": "Name",
+                    "description": "The HomeKit name of the device.",
+                    "type": "string"
+                  },
+                  "gpio": {
+                    "title": "GPIO",
+                    "description": "The BCM number of the GPIO pin.",
+                    "type": "integer",
+                    "maximum": 31,
+                    "condition": {
+                      "functionBody": "return ['button', 'carbonmonoxide', 'contact', 'dht', 'doorbell', 'fan', 'garage', 'leak', 'light', 'lock', 'motion', 'rocker', 'servo', 'smoke', 'switch', 'valve'].includes(model.hosts[arrayIndices[0]].devices[arrayIndices[1]].device)"
+                    }
+                  },
+                  "pull": {
+                    "title": "Pull-up/pull-down resistor",
+                    "description": "The configuration of the internal pull-up/pull-down resistor.",
+                    "type": "string",
+                    "oneOf": [
+                      { "title": "Off", "enum": ["off"] },
+                      { "title": "Pull-down", "enum": ["down"] },
+                      { "title": "Pull-up", "enum": ["up"] }
+                    ],
+                    "placeholder": "off",
+                    "condition": {
+                      "functionBody": "return ['button', 'carbonmonoxide', 'contact', 'doorbell', 'leak', 'motion', 'rocker', 'smoke'].includes(model.hosts[arrayIndices[0]].devices[arrayIndices[1]].device)"
+                    }
+                  },
+                  "debounceTimeout": {
+                    "title": "Debounce Timeout",
+                    "description": "Time in ms to ignore state changes for debouncing. Default 20ms.",
+                    "type": "integer",
+                    "minimum": 0,
+                    "maxmimum": 300,
+                    "placeholder": 20,
+                    "condition": {
+                      "functionBody": "return ['button', 'carbonmonoxide', 'contact', 'doorbell', 'leak', 'motion', 'rocker', 'smoke'].includes(model.hosts[arrayIndices[0]].devices[arrayIndices[1]].device)"
+                    }
+                  },
+                  "reversed": {
+                    "title": "Reversed",
+                    "description": "The device state is reversed.",
+                    "type": "boolean",
+                    "condition": {
+                      "functionBody": "return ['button', 'carbonmonoxide', 'contact', 'doorbell', 'fan', 'garage', 'leak', 'light', 'lock', 'motion', 'smoke', 'switch', 'valve'].includes(model.hosts[arrayIndices[0]].devices[arrayIndices[1]].device)"
+                    }
+                  },
+                  "doublePressTimeout": {
+                    "title": "Double Press Timeout",
+                    "description": "Time in ms to wait after a release to see if button is pressed again for Double Press. Default 500ms.  Set to 0 to disable Double Press altogether.",
+                    "type": "integer",
+                    "minimum": 0,
+                    "maxmimum": 1000,
+                    "placeholder": 500,
+                    "condition": {
+                      "functionBody": "return ['button'].includes(model.hosts[arrayIndices[0]].devices[arrayIndices[1]].device)"
+                    }
+                  },
+                  "longPressTimeout": {
+                    "title": "Long Press Timeout",
+                    "description": "Time in ms between button press and release after which a Long Press is issued. Default: 1000ms. Set to 0 to disable Long Press.",
+                    "type": "integer",
+                    "minimum": 0,
+                    "maxmimum": 2000,
+                    "placeholder": 1000,
+                    "condition": {
+                      "functionBody": "return ['button'].includes(model.hosts[arrayIndices[0]].devices[arrayIndices[1]].device)"
+                    }
+                  },
+                  "pulse": {
+                    "title": "Pulse",
+                    "description": "Time in ms to lock the lock or turn off the switch automatically.  Default: 0 (disabled).",
+                    "type": "integer",
+                    "minimum": 20,
+                    "maximum": 5000,
+                    "placeholder": 0,
+                    "condition": {
+                      "functionBody": "return ['garage', 'lock', 'switch'].includes(model.hosts[arrayIndices[0]].devices[arrayIndices[1]].device)"
+                    }
+                  },
+                  "duration": {
+                    "title": "Expose Duration",
+                    "description": "Expose duration characteristic on switch to turn it off automatically.",
+                    "type": "boolean",
+                    "placeholeder": "none",
+                    "condition": {
+                      "functionBody": "return ['switch'].includes(model.hosts[arrayIndices[0]].devices[arrayIndices[1]].device)"
+                    }
+                  },
+                  "gpioClock": {
+                    "title": "GPIO Clock",
+                    "description": "The BCM number of the GPIO pin for the clock signal.",
+                    "type": "integer",
+                    "maximum": 31,
+                    "placeholder": 24,
+                    "condition": {
+                      "functionBody": "return ['blinkt', 'p9813'].includes(model.hosts[arrayIndices[0]].devices[arrayIndices[1]].device)"
+                    }
+                  },
+                  "gpioData": {
+                    "title": "GPIO Data",
+                    "description": "The BCM number of the GPIO pin for the data signal.",
+                    "type": "integer",
+                    "maximum": 31,
+                    "placeholder": 23,
+                    "condition": {
+                      "functionBody": "return ['blinkt', 'p9813'].includes(model.hosts[arrayIndices[0]].devices[arrayIndices[1]].device)"
+                    }
+                  },
+                  "nLeds": {
+                    "title": "# LEDs",
+                    "description": "The number LEDs.",
+                    "type": "integer",
+                    "minimum": 1,
+                    "placeholder": 8,
+                    "condition": {
+                      "functionBody": "return ['blinkt', 'p9813'].includes(model.hosts[arrayIndices[0]].devices[arrayIndices[1]].device)"
+                    }
+                  },
+                  "id": {
+                    "title": "ID",
+                    "description": "The ID of the DS18B20 sensor (without the leading '28-').",
+                    "type": "string",
+                    "pattern": "^[0-9a-f]{12}$",
+                    "condition": {
+                      "functionBody": "return ['ds18b20'].includes(model.hosts[arrayIndices[0]].devices[arrayIndices[1]].device)"
+                    }
+                  }
+                },
+                "oneOf": [
+                  {
+                    "properties": {
+                      "device": { "enum": ["button", "carbonmonoxide", "contact", "dht", "doorbell", "fan", "garage", "leak", "light", "lock", "motion", "rocker", "servo", "smoke", "switch", "valve"] }
+                    },
+                    "required": ["gpio"]
+                  },
+                  {
+                    "properties": {
+                      "device": { "enum": ["p9813"] }
+                    },
+                    "required": ["gpioClock", "gpioData", "nLeds"]
+                  },
+                  {
+                    "properties": {
+                      "device": { "enum": ["blinkt", "fanshim"] }
+                    },
+                    "required": []
+                  },
+                  {
+                    "properties": {
+                      "device": { "enum": ["ds18b20"] }
+                    },
+                    "required": ["id"]
+                  }
+                ]
+              }
             },
             "hidden": {
               "title": "Hidden",
@@ -69,535 +274,6 @@
               "title": "USB Power",
               "description": "Expose an Outlet service to control power to the USB ports. Only for Raspberry Pi models with four USB 2.0 ports: B+, 2B, 3B, and 3B+.<br>You need to configure pigpiod as well, see the <a href=\"https://github.com/ebaauw/homebridge-rpi/wiki/Supported-Devices#usb-power\" target=\"_blank\">Wiki</a>.",
               "type": "boolean"
-            },
-            "devices": {
-              "title": "Devices",
-              "notitle": true,
-              "type": "array",
-              "items": {
-                "description": "<b>Device</b>",
-                "type": "object",
-                "additionalProperties": false,
-                "properties": {
-                  "device": {
-                    "title": "Device",
-                    "description": "The type of the device. See the <a href=\"https://github.com/ebaauw/homebridge-rpi/wiki/Supported-Devices#gpio-devices\" target=\"_blank\">Wiki</a> for details.",
-                    "type": "string",
-                    "required": true,
-                    "oneOf": [
-                      {
-                        "title": "Blinkt",
-                        "enum": [
-                          "blinkt"
-                        ]
-                      },
-                      {
-                        "title": "Button",
-                        "enum": [
-                          "button"
-                        ]
-                      },
-                      {
-                        "title": "DHTxx Temperature/Humidity Sensor",
-                        "enum": [
-                          "dht"
-                        ]
-                      },
-                      {
-                        "title": "DS18B20 Temperature Sensor",
-                        "enum": [
-                          "ds18b20"
-                        ]
-                      },
-                      {
-                        "title": "Carbon Monoxide Sensor",
-                        "enum": [
-                          "carbonmonoxide"
-                        ]
-                      },
-                      {
-                        "title": "Contact Sensor",
-                        "enum": [
-                          "contact"
-                        ]
-                      },
-                      {
-                        "title": "Door Bell",
-                        "enum": [
-                          "doorbell"
-                        ]
-                      },
-                      {
-                        "title": "Fan",
-                        "enum": [
-                          "fan"
-                        ]
-                      },
-                      {
-                        "title": "Fan SHIM",
-                        "enum": [
-                          "fanshim"
-                        ]
-                      },
-                      {
-                        "title": "Garage Door Opener",
-                        "enum": [
-                          "garage"
-                        ]
-                      },
-                      {
-                        "title": "Leak Sensor",
-                        "enum": [
-                          "leak"
-                        ]
-                      },
-                      {
-                        "title": "Light",
-                        "enum": [
-                          "light"
-                        ]
-                      },
-                      {
-                        "title": "Lock",
-                        "enum": [
-                          "lock"
-                        ]
-                      },
-                      {
-                        "title": "Motion Sensor",
-                        "enum": [
-                          "motion"
-                        ]
-                      },
-                      {
-                        "title": "Chain of P9813 LED Controllers",
-                        "enum": [
-                          "p9813"
-                        ]
-                      },
-                      {
-                        "title": "Rocker",
-                        "enum": [
-                          "rocker"
-                        ]
-                      },
-                      {
-                        "title": "Servo Motor",
-                        "enum": [
-                          "servo"
-                        ]
-                      },
-                      {
-                        "title": "Smoke Sensor",
-                        "enum": [
-                          "smoke"
-                        ]
-                      },
-                      {
-                        "title": "Switch",
-                        "enum": [
-                          "switch"
-                        ]
-                      },
-                      {
-                        "title": "Valve",
-                        "enum": [
-                          "valve"
-                        ]
-                      }
-                    ]
-                  },
-                  "name": {
-                    "title": "Name",
-                    "description": "The HomeKit name of the device.",
-                    "type": "string"
-                  },
-                  "gpio": {
-                    "title": "GPIO",
-                    "description": "The BCM number of the GPIO pin.<br>For devices: Button, Carbon Monoxide Sensor, Contact Sensor, DHTxx Sensor, Door Bell, Fan, Garage Door Opener, Leak Sensor, Light, Motion Sensor, Rocker, Servo Motor, Smoke Sensor, Switch.",
-                    "type": "integer",
-                    "maximum": 31
-                  },
-                  "pull": {
-                    "title": "Pull-up/pull-down resistor",
-                    "description": "The configuration of the internal pull-up/pull-down resistor.<br>For input devices: Button, Carbon Monoxide Sensor, Contact Sensor, Door Bell, Leak Sensor, Motion Sensor, Rocket, Smoke Sensor.",
-                    "type": "string",
-                    "oneOf": [
-                      {
-                        "title": "Off",
-                        "enum": [
-                          "off"
-                        ]
-                      },
-                      {
-                        "title": "Pull-down",
-                        "enum": [
-                          "down"
-                        ]
-                      },
-                      {
-                        "title": "Pull-up",
-                        "enum": [
-                          "up"
-                        ]
-                      }
-                    ]
-                  },
-                  "debounceTimeout": {
-                    "title": "Debounce Timeout",
-                    "description": "Time in ms to ignore state changes for debouncing. Default 20ms.<br>For input devices: Button, Carbon Monoxide Sensor, Contact Sensor, Door Bell, Leak Sensor, Motion Sensor, Rocket, Smoke Sensor.",
-                    "type": "integer",
-                    "minimum": 0,
-                    "maxmimum": 300
-                  },
-                  "reversed": {
-                    "title": "Reversed",
-                    "description": "The device state is reversed<br>For devices: Button, Carbon Monoxide Sensor, Contact Sensor, Door Bell, Garage Door Opener, Leak Sensor, Motion Sensor, Smoke Sensor, Switch.",
-                    "type": "boolean"
-                  },
-                  "doublePressTimeout": {
-                    "title": "Double Press Timeout",
-                    "description": "Time in ms to wait after a release to see if button is pressed again for Double Press. Default 500ms.  Set to 0 to disable Double Press altogether.<br>For device: Button.",
-                    "type": "integer",
-                    "minimum": 0,
-                    "maxmimum": 100
-                  },
-                  "longPressTimeout": {
-                    "title": "Long Press Timeout",
-                    "description": "Time in ms between button press and release after which a Long Press is issued. Default: 1000ms. Set to 0 to disable Long Press.<br>For device: Button.",
-                    "type": "integer",
-                    "minimum": 0,
-                    "maxmimum": 100
-                  },
-                  "pulse": {
-                    "title": "Pulse",
-                    "description": "Time in ms to lock the lock or turn off the switch automatically.<br>For devices: Lock, Switch.",
-                    "type": "integer",
-                    "minimum": 20,
-                    "maximum": 5000
-                  },
-                  "duration": {
-                    "title": "Expose Duration",
-                    "description": "Expose duration characteristic on switch to turn it off automatically.<br>For device: Switch.",
-                    "type": "boolean"
-                  },
-                  "gpioClock": {
-                    "title": "GPIO Clock",
-                    "description": "The BCM number of the GPIO pin for the clock signal.<br>For device: Blinkt.",
-                    "type": "integer",
-                    "maximum": 31
-                  },
-                  "gpioData": {
-                    "title": "GPIO Data",
-                    "description": "The BCM number of the GPIO pin for the data signal.<br>For device: Blinkt.",
-                    "type": "integer",
-                    "maximum": 31
-                  },
-                  "nLeds": {
-                    "title": "# LEDs",
-                    "description": "The number LEDs.<br>For device: Blinkt.",
-                    "type": "integer"
-                  },
-                  "id": {
-                    "title": "ID",
-                    "description": "The ID of the DS18B20 temperature sensor (without leading '28-').<br>For device: DS18B20.",
-                    "type": "string"
-                  }
-                },
-                "allOf": [
-                  {
-                    "oneOf": [
-                      {
-                        "properties": {
-                          "device": {
-                            "enum": [
-                              "blinkt",
-                              "ds18b20",
-                              "fanshim",
-                              "p9813"
-                            ]
-                          },
-                          "gpio": {
-                            "not": {}
-                          }
-                        }
-                      },
-                      {
-                        "properties": {
-                          "device": {
-                            "enum": [
-                              "button",
-                              "carbonmonoxide",
-                              "contact",
-                              "dht",
-                              "doorbell",
-                              "fan",
-                              "garage",
-                              "leak",
-                              "light",
-                              "lock",
-                              "motion",
-                              "rocker",
-                              "servo",
-                              "smoke",
-                              "switch",
-                              "valve"
-                            ]
-                          }
-                        },
-                        "required": [
-                          "gpio"
-                        ]
-                      }
-                    ]
-                  },
-                  {
-                    "anyOf": [
-                      {
-                        "properties": {
-                          "device": {
-                              "enum": [
-                                "button",
-                                "carbonmonoxide",
-                                "contact",
-                                "doorbell",
-                                "leak",
-                                "motion",
-                                "rocker",
-                                "smoke"
-                              ]
-                          }
-                        }
-                      },
-                      {
-                        "properties": {
-                          "pull": {
-                            "not": {}
-                          }
-                        }
-                      }
-                    ]
-                  },
-                  {
-                    "anyOf": [
-                      {
-                        "properties": {
-                          "device": {
-                            "enum": [
-                              "button",
-                              "carbonmonoxide",
-                              "contact",
-                              "doorbell",
-                              "leak",
-                              "motion",
-                              "rocker",
-                              "smoke"
-                            ]
-                          }
-                        }
-                      },
-                      {
-                        "properties": {
-                          "debounceTimeout": {
-                            "not": {}
-                          }
-                        }
-                      }
-                    ]
-                  },
-                  {
-                    "anyOf": [
-                      {
-                        "properties": {
-                          "device": {
-                            "enum": [
-                              "button",
-                              "carbonmonoxide",
-                              "contact",
-                              "doorbell",
-                              "fan",
-                              "garage",
-                              "leak",
-                              "light",
-                              "lock",
-                              "motion",
-                              "smoke",
-                              "switch",
-                              "valve"
-                            ]
-                          }
-                        }
-                      },
-                      {
-                        "properties": {
-                          "reversed": {
-                            "not": {}
-                          }
-                        }
-                      }
-                    ]
-                  },
-                  {
-                    "anyOf": [
-                      {
-                        "properties": {
-                          "device": {
-                            "const": "button"
-                          }
-                        }
-                      },
-                      {
-                        "properties": {
-                          "doublePressTimeout": {
-                            "not": {}
-                          }
-                        }
-                      }
-                    ]
-                  },
-                  {
-                    "anyOf": [
-                      {
-                        "properties": {
-                          "device": {
-                            "const": "button"
-                          }
-                        }
-                      },
-                      {
-                        "properties": {
-                          "longPressTimeout": {
-                            "not": {}
-                          }
-                        }
-                      }
-                    ]
-                  },
-                  {
-                    "oneOf": [
-                      {
-                        "properties": {
-                          "device": {
-                            "enum": [
-                              "blinkt",
-                              "p9813"
-                            ]
-                          }
-                        }
-                      },
-                      {
-                        "properties": {
-                          "gpioClock": {
-                            "not": {}
-                          }
-                        }
-                      }
-                    ]
-                  },
-                  {
-                    "oneOf": [
-                      {
-                        "properties": {
-                          "device": {
-                            "enum": [
-                              "blinkt",
-                              "p9813"
-                            ]
-                          }
-                        }
-                      },
-                      {
-                        "properties": {
-                          "gpioData": {
-                            "not": {}
-                          }
-                        }
-                      }
-                    ]
-                  },
-                  {
-                    "oneOf": [
-                      {
-                        "properties": {
-                          "device": {
-                            "enum": [
-                              "blinkt",
-                              "p9813"
-                            ]
-                          }
-                        }
-                      },
-                      {
-                        "properties": {
-                          "nLeds": {
-                            "not": {}
-                          }
-                        }
-                      }
-                    ]
-                  },
-                  {
-                    "anyOf": [
-                      {
-                        "properties": {
-                          "device": {
-                            "enum": [
-                              "garage",
-                              "lock",
-                              "switch"
-                            ]
-	                      }
-                        }
-                      },
-                      {
-                        "properties": {
-                          "pulse": {
-                            "not": {}
-                          }
-                        }
-                      }
-                    ]
-                  },
-                  {
-                    "anyOf": [
-                      {
-                        "properties": {
-                          "device": {
-                            "enum": [
-                              "switch"
-                            ]
-	                      }
-                        }
-                      },
-                      {
-                        "properties": {
-                          "autoOff": {
-                            "not": {}
-                          }
-                        }
-                      }
-                    ]
-                  },
-                  {
-                    "anyOf": [
-                      {
-                        "properties": {
-                          "device": {
-                            "const": "ds18b20"
-                          }
-                        }
-                      },
-                      {
-                        "properties": {
-                          "id": {
-                            "not": {}
-                          }
-                        }
-                      }
-                    ]
-                  }
-                ]
-              }
             }
           }
         }
